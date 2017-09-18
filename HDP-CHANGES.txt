@@ -352,3 +352,4 @@ BUG-77993: upgrade frontend-maven-plugin to latest
 ATLAS-2827 Unable to persist vertex when indexed string attribute is really long
 ATLAS-2827: fix to handle failure in saving indexable string property of large size - #2
 ATLAS-2827: fix to handle failure in saving indexable string property of large size - #3
+HOTFIX-2124 ATLAS-2145: Build failure in atlas-dashboardv2 due to js-beautify issue
