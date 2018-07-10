@@ -60,7 +60,9 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -125,7 +127,7 @@ import static org.apache.atlas.type.AtlasStructType.AtlasAttribute.AtlasRelation
 import static org.apache.atlas.type.AtlasStructType.AtlasAttribute.AtlasRelationshipEdgeDirection.IN;
 import static org.apache.atlas.type.AtlasStructType.AtlasAttribute.AtlasRelationshipEdgeDirection.OUT;
 
-
+@Component
 public final class EntityGraphRetriever {
     private static final Logger LOG = LoggerFactory.getLogger(EntityGraphRetriever.class);
 
@@ -137,6 +139,9 @@ public final class EntityGraphRetriever {
     public static final String DESCRIPTION    = "description";
     public static final String OWNER          = "owner";
     public static final String CREATE_TIME    = "createTime";
+    private static final String SOFT_REFERENCE_FORMAT_SEPERATOR = ":";
+    private static final int SOFT_REFERENCE_FORMAT_INDEX_TYPE_NAME = 0;
+    private static final int SOFT_REFERENCE_FORMAT_INDEX_GUID = 1;
     public static final String QUALIFIED_NAME = "qualifiedName";
 
     private static final TypeReference<List<TimeBoundary>> TIME_BOUNDARIES_LIST_TYPE = new TypeReference<List<TimeBoundary>>() {};
@@ -146,6 +151,7 @@ public final class EntityGraphRetriever {
 
     private final boolean ignoreRelationshipAttr;
 
+    @Inject
     public EntityGraphRetriever(AtlasTypeRegistry typeRegistry) {
         this(typeRegistry, false);
     }
@@ -685,13 +691,25 @@ public final class EntityGraphRetriever {
                 ret = mapVertexToStruct(entityVertex, edgeLabel, null, entityExtInfo, isMinExtInfo);
                 break;
             case OBJECT_ID_TYPE:
-                ret = mapVertexToObjectId(entityVertex, edgeLabel, null, entityExtInfo, isOwnedAttribute, edgeDirection, isMinExtInfo);
+                if(attribute.getAttributeDef().isSoftReferenced()) {
+                    ret = mapVertexToObjectIdForSoftRef(entityVertex, attribute.getVertexPropertyName());
+                } else {
+                	ret = mapVertexToObjectId(entityVertex, edgeLabel, null, entityExtInfo, isOwnedAttribute, edgeDirection, isMinExtInfo);
+				}
                 break;
             case ARRAY:
-                ret = mapVertexToArray(entityVertex, entityExtInfo, isOwnedAttribute, attribute, isMinExtInfo);
+                if(attribute.getAttributeDef().isSoftReferenced()) {
+                    ret = mapVertexToArrayForSoftRef(entityVertex, attribute.getVertexPropertyName());
+                } else {
+                	ret = mapVertexToArray(entityVertex, entityExtInfo, isOwnedAttribute, attribute, isMinExtInfo);
+				}
                 break;
             case MAP:
-                ret = mapVertexToMap(entityVertex, entityExtInfo, isOwnedAttribute, attribute, isMinExtInfo);
+                if(attribute.getAttributeDef().isSoftReferenced()) {
+                    ret = mapVertexToMapForSoftRef(entityVertex, attribute.getVertexPropertyName());
+                } else {
+                	ret = mapVertexToMap(entityVertex, entityExtInfo, isOwnedAttribute, attribute, isMinExtInfo);
+				}
                 break;
             case CLASSIFICATION:
                 // do nothing
@@ -699,6 +717,76 @@ public final class EntityGraphRetriever {
         }
 
         return ret;
+    }
+
+    private Map<String, AtlasObjectId> mapVertexToMapForSoftRef(AtlasVertex entityVertex, String propertyName) {
+        Map map = entityVertex.getProperty(propertyName, Map.class);
+        if (MapUtils.isEmpty(map)) {
+            return null;
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Mapping map attribute {} for vertex {}", propertyName, entityVertex);
+        }
+
+        Map ret = new HashMap();
+        for (Object mapKey : map.keySet()) {
+            String softRefRaw = (String) map.get(mapKey);
+            AtlasObjectId mapValue = getAtlasObjectIdFromSoftRefFormat(softRefRaw);
+            if (mapValue != null) {
+                ret.put(mapKey, mapValue);
+            }
+        }
+
+        return ret;
+    }
+
+    private List<AtlasObjectId> mapVertexToArrayForSoftRef(AtlasVertex entityVertex, String propertyName) {
+        List rawValue = entityVertex.getListProperty(propertyName, List.class);
+        if (CollectionUtils.isEmpty(rawValue)) {
+            return null;
+        }
+
+        List list = (List) rawValue;
+        List<AtlasObjectId> objectIds = new ArrayList<>();
+        for (Object o : list) {
+            if (!(o instanceof String)) {
+                continue;
+            }
+
+            AtlasObjectId objectId = getAtlasObjectIdFromSoftRefFormat((String) o);
+            if(objectId == null) {
+                continue;
+            }
+
+            objectIds.add(objectId);
+        }
+
+        return objectIds;
+    }
+
+    private AtlasObjectId mapVertexToObjectIdForSoftRef(AtlasVertex entityVertex, String vertexPropertyName) {
+        String rawValue = AtlasGraphUtilsV2.getEncodedProperty(entityVertex, vertexPropertyName, String.class);
+        if(StringUtils.isEmpty(rawValue)) {
+            return null;
+        }
+
+        return getAtlasObjectIdFromSoftRefFormat(rawValue);
+    }
+
+    private AtlasObjectId getAtlasObjectIdFromSoftRefFormat(String rawValue) {
+        if(StringUtils.isEmpty(rawValue)) {
+            return null;
+        }
+
+        String[] objectIdParts = StringUtils.split(rawValue, SOFT_REFERENCE_FORMAT_SEPERATOR);
+        if(objectIdParts.length < 2) {
+            LOG.warn("Expecting value to be formatted for softRef. Instead found: {}", rawValue);
+            return null;
+        }
+
+        return new AtlasObjectId(objectIdParts[SOFT_REFERENCE_FORMAT_INDEX_GUID],
+                objectIdParts[SOFT_REFERENCE_FORMAT_INDEX_TYPE_NAME]);
     }
 
     private Map<String, Object> mapVertexToMap(AtlasVertex entityVertex, AtlasEntityExtInfo entityExtInfo,

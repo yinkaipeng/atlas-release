@@ -30,9 +30,15 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
+import com.sun.jersey.multipart.BodyPart;
+import com.sun.jersey.multipart.FormDataBodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.MultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
+import com.sun.jersey.multipart.file.StreamDataBodyPart;
+import com.sun.jersey.multipart.impl.MultiPartWriter;
+import org.apache.atlas.model.impexp.AtlasServer;
+import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasImportRequest;
 import org.apache.atlas.model.impexp.AtlasImportResult;
 import org.apache.atlas.model.metrics.AtlasMetrics;
@@ -41,6 +47,7 @@ import org.apache.atlas.type.AtlasType;
 import org.apache.atlas.utils.AtlasJson;
 import org.apache.atlas.utils.AuthenticationUtil;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -53,7 +60,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -69,7 +79,8 @@ public abstract class AtlasBaseClient {
     public static final String ADMIN_STATUS = "admin/status";
     public static final String ADMIN_METRICS = "admin/metrics";
     public static final String ADMIN_IMPORT = "admin/import";
-    public static final String HTTP_AUTHENTICATION_ENABLED = "atlas.http.authentication.enabled";
+    public static final String ADMIN_EXPORT = "admin/export";
+    public static final String ADMIN_SERVER_TEMPLATE = "%sadmin/server/%s";
 
     public static final String QUERY = "query";
     public static final String LIMIT = "limit";
@@ -91,6 +102,10 @@ public abstract class AtlasBaseClient {
     static final int DEFAULT_SLEEP_BETWEEN_RETRIES_MS = 5000;
     private static final Logger LOG = LoggerFactory.getLogger(AtlasBaseClient.class);
     private static final API IMPORT = new API(BASE_URI + ADMIN_IMPORT, HttpMethod.POST, Response.Status.OK, MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_JSON);
+    private static final API EXPORT = new API(BASE_URI + ADMIN_EXPORT, HttpMethod.POST, Response.Status.OK, MediaType.APPLICATION_JSON, MediaType.APPLICATION_OCTET_STREAM);
+    private static final String IMPORT_REQUEST_PARAMTER = "request";
+    private static final String IMPORT_DATA_PARAMETER = "data";
+
     protected WebResource service;
     protected Configuration configuration;
     private String basicAuthUser;
@@ -251,6 +266,8 @@ public abstract class AtlasBaseClient {
         // Enable POJO mapping feature
         config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
         config.getClasses().add(JacksonJaxbJsonProvider.class);
+        config.getClasses().add(MultiPartWriter.class);
+
         int readTimeout = configuration.getInt("atlas.client.readTimeoutMSecs", 60000);
         int connectTimeout = configuration.getInt("atlas.client.connectTimeoutMSecs", 60000);
         if (configuration.getBoolean(TLS_ENABLED, false)) {
@@ -367,7 +384,9 @@ public abstract class AtlasBaseClient {
                     return null;
                 }
                 try {
-                    if (responseType.getRawClass().equals(ObjectNode.class)) {
+                    if(api.getProduces().equals(MediaType.APPLICATION_OCTET_STREAM)) {
+                        return (T) clientResponse.getEntityInputStream();
+                    } else if (responseType.getRawClass().equals(ObjectNode.class)) {
                         String stringEntity = clientResponse.getEntity(String.class);
                         try {
                             JsonNode jsonObject = AtlasJson.parseToV1JsonNode(stringEntity);
@@ -414,7 +433,7 @@ public abstract class AtlasBaseClient {
         return getResource(service, api, queryParams);
     }
 
-    protected abstract API formatPathParameters(API api, String ... params);
+    protected abstract API formatPathParameters(API api, String... params);
 
     void initializeState(String[] baseUrls, UserGroupInformation ugi, String doAsUser) {
         initializeState(getClientProperties(), baseUrls, ugi, doAsUser);
@@ -446,13 +465,70 @@ public abstract class AtlasBaseClient {
         return configuration.getInt(AtlasBaseClient.ATLAS_CLIENT_HA_RETRIES_KEY, AtlasBaseClient.DEFAULT_NUM_RETRIES);
     }
 
+    public InputStream exportData(AtlasExportRequest request) throws AtlasServiceException {
+        try {
+            return (InputStream) callAPI(EXPORT, Object.class, request);
+        } catch (Exception e) {
+            LOG.error("error writing to file", e);
+            throw new AtlasServiceException(e);
+        }
+    }
+
+    public void exportData(AtlasExportRequest request, String absolutePath) throws AtlasServiceException {
+        OutputStream fileOutputStream = null;
+        try {
+            InputStream inputStream = exportData(request);
+            fileOutputStream = new FileOutputStream(new File(absolutePath));
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                fileOutputStream.write(buffer, 0, bytesRead);
+            }
+
+            IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(fileOutputStream);
+
+        } catch (Exception e) {
+            LOG.error("error writing to file", e);
+            throw new AtlasServiceException(e);
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    LOG.error("error closing file", e);
+                    throw new AtlasServiceException(e);
+                }
+            }
+        }
+    }
+
     public AtlasImportResult importData(AtlasImportRequest request, String absoluteFilePath) throws AtlasServiceException {
-        FileDataBodyPart filePart = new FileDataBodyPart("data", new File(absoluteFilePath));
+        return performImportData(getImportRequestBodyPart(request),
+                            new FileDataBodyPart(IMPORT_DATA_PARAMETER, new File(absoluteFilePath)));
+    }
+
+    public AtlasImportResult importData(AtlasImportRequest request, InputStream stream) throws AtlasServiceException {
+        return performImportData(getImportRequestBodyPart(request),
+                                new StreamDataBodyPart(IMPORT_DATA_PARAMETER, stream));
+    }
+
+    private AtlasImportResult performImportData(BodyPart requestPart, BodyPart filePart) throws AtlasServiceException {
         MultiPart multipartEntity = new FormDataMultiPart()
-                .field("request", AtlasType.toJson(request), MediaType.APPLICATION_JSON_TYPE)
+                .bodyPart(requestPart)
                 .bodyPart(filePart);
 
         return callAPI(IMPORT, AtlasImportResult.class, multipartEntity);
+    }
+
+
+    private FormDataBodyPart getImportRequestBodyPart(AtlasImportRequest request) {
+        return new FormDataBodyPart(IMPORT_REQUEST_PARAMTER, AtlasType.toJson(request), MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    public AtlasServer getServer(String serverName) throws AtlasServiceException {
+        API api = new API(String.format(ADMIN_SERVER_TEMPLATE, BASE_URI, serverName), HttpMethod.GET, Response.Status.OK);
+        return callAPI(api, AtlasServer.class, null);
     }
 
     boolean isRetryableException(ClientHandlerException che) {

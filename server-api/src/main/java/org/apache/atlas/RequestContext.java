@@ -32,6 +32,7 @@ public class RequestContext {
     private static final Logger LOG = LoggerFactory.getLogger(RequestContext.class);
 
     private static final ThreadLocal<RequestContext> CURRENT_CONTEXT = new ThreadLocal<>();
+    private static final Set<RequestContext>         ACTIVE_REQUESTS = new HashSet<>();
 
     private final Map<String, AtlasObjectId>             updatedEntities     = new HashMap<>();
     private final Map<String, AtlasObjectId>             deletedEntities     = new HashMap<>();
@@ -60,6 +61,10 @@ public class RequestContext {
         if (ret == null) {
             ret = new RequestContext();
             CURRENT_CONTEXT.set(ret);
+
+            synchronized (ACTIVE_REQUESTS) {
+                ACTIVE_REQUESTS.add(ret);
+            }
         }
 
         return ret;
@@ -79,9 +84,18 @@ public class RequestContext {
             if (instance.entityGuidInRequest != null) {
                 instance.entityGuidInRequest.clear();
             }
+
+            synchronized (ACTIVE_REQUESTS) {
+                ACTIVE_REQUESTS.remove(instance);
+            }
         }
 
         CURRENT_CONTEXT.remove();
+    }
+
+    public static String getCurrentUser() {
+        RequestContext context = CURRENT_CONTEXT.get();
+        return context != null ? context.getUser() : null;
     }
 
     public String getUser() {
@@ -146,6 +160,30 @@ public class RequestContext {
 
             addedPropagations.put(guid, classifications);
         }
+    }
+
+    public static RequestContext createContext() {
+        clear();
+
+        return get();
+    }
+
+    public static int getActiveRequestsCount() {
+        return ACTIVE_REQUESTS.size();
+    }
+
+    public static long earliestActiveRequestTime() {
+        long ret = System.currentTimeMillis();
+
+        synchronized (ACTIVE_REQUESTS) {
+            for (RequestContext context : ACTIVE_REQUESTS) {
+                if (ret > context.getRequestTime()) {
+                    ret = context.getRequestTime();
+                }
+            }
+        }
+
+        return ret;
     }
 
     public void recordRemovedPropagation(String guid, AtlasClassification classification) {

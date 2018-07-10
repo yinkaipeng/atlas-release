@@ -17,10 +17,8 @@
  */
 package org.apache.atlas.repository.ogm;
 
-import org.apache.atlas.exception.AtlasBaseException;
 import org.apache.atlas.model.AtlasBaseModelObject;
 import org.apache.atlas.model.instance.AtlasEntity;
-import org.apache.atlas.repository.Constants;
 import org.apache.atlas.type.AtlasEntityType;
 import org.apache.atlas.type.AtlasTypeRegistry;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +52,7 @@ public abstract class AbstractDataTransferObject<T extends AtlasBaseModelObject>
     }
 
 
-    protected AtlasEntity getDefaultAtlasEntity(T obj) throws AtlasBaseException {
+    protected AtlasEntity getDefaultAtlasEntity(T obj) {
         AtlasEntity ret = getEntityType().createDefaultValue();
 
         if (obj != null) {
