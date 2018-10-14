@@ -66,6 +66,7 @@ public class AtlasJanusGraphDatabase implements GraphDatabase<AtlasJanusVertex, 
     public static final String GRAPH_PREFIX         = "atlas.graph";
     public static final String INDEX_BACKEND_CONF   = "index.search.backend";
     public static final String SOLR_ZOOKEEPER_URL   = "atlas.graph.index.search.solr.zookeeper-url";
+    public static final String SOLR_ZOOKEEPER_URLS  = "atlas.graph.index.search.solr.zookeeper-urls";
     public static final String INDEX_BACKEND_LUCENE = "lucene";
     public static final String INDEX_BACKEND_ES     = "elasticsearch";
 
@@ -81,7 +82,10 @@ public class AtlasJanusGraphDatabase implements GraphDatabase<AtlasJanusVertex, 
         startLocalSolr();
 
         Configuration configProperties = ApplicationProperties.get();
-        Configuration janusConfig      = ApplicationProperties.getSubsetConfiguration(configProperties, GRAPH_PREFIX);
+
+        configProperties.setProperty(SOLR_ZOOKEEPER_URLS, configProperties.getStringArray(SOLR_ZOOKEEPER_URL));
+
+        Configuration janusConfig = ApplicationProperties.getSubsetConfiguration(configProperties, GRAPH_PREFIX);
 
         //add serializers for non-standard property value types that Atlas uses
         janusConfig.addProperty("attributes.custom.attribute1.attribute-class", TypeCategory.class.getName());
