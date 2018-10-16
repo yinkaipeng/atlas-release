@@ -1,36 +1,86 @@
-ATLAS-2438: fix errors found in sitecheck - https://whimsy.apache.org/site/project/atlas
-ATLAS-2523: Add HomeId and allow GUIDs to be specified on creates
-ATLAS-2736: doc updated to replace reference to github with a link to download released artifacts
-ATLAS-2745: AtlasEnumDefStore should remember default value
-ATLAS-2785: Import Hive script should handle table name with database in -t option
-ATLAS-2786: Honor ZK server ensemble provided in configuration
-ATLAS-2788: Add policy permissions for tagsync user.
-ATLAS-2793: updated AtlasClient approach of determining if kerberos authentication is enabled or not
-ATLAS-2794: updated AtlasClient to explicitly specify JacksonJaxbJsonProvider
-ATLAS-2801: Create a separate tar file for atlas-server components excluding atlas hook related components
-ATLAS-2807: Re-evaluate classification propagation during entity delete
-ATLAS-2808: Add proxy support
-ATLAS-2809: updated authorization model to authorize add/update/remove of relationships
-ATLAS-2812: Upgrade commons-fileupload to 1.3.3
-ATLAS-2815: API, UI updates for faster rendering of entity details
-ATLAS-2816: Allow ignoring relationship in EntityGraphRetriever for FullTextMapperV2
-ATLAS-2817: Handle auto upgrade from janus 0.2.0 to janus  0.3.0
-ATLAS-2817: JanusGraph 0.3.0
+--------------------
+Atlantic-M10 Changes
+--------------------
+
+ATLAS-2724: UI enhancement for Avro schemas and other JSON-valued attributes
+ATLAS-2786: updated HBase client to use all zookeeper entries
+ATLAS-2827: Fix to handle failure in saving indexable string property of large size
+ATLAS-2841: Regression, Tag Propagation : When a table is moved from database1 to database2 , tag propagated from db1 still propagated to table.
+ATLAS-2844: added eventTime field in EntityNotificationV2
+ATLAS-2847: UI - Add grunt scripts in package.json
+ATLAS-2848: Fix property name in ApplicationProperties
+ATLAS-2849: Basic search result list for classification= '_NOT_CLASSIFIED' returns type vertices in addition to matching entity vertices
+ATLAS-2852: Export Import simultaneous requests updated error code.
+ATLAS-2853: updated to send entity-notifications after successful graph transaction commit
+ATLAS-2857: Fix Atlas release version in /api/atlas/version API.
+ATLAS-2860: Remove dependency on atlas-application.properties for AtlasClient.
+ATLAS-2872: updated HiveHook to purge name cache periodically
+ATLAS-2877: updated notification processing to wait only before retry
+ATLAS-2878: avoid retrieval of entiyWithExtInfo when extInfo is not needed
+ATLAS-2891: updated hook notification processing with option to ignore potentially incorrect hive_column_lineage
+ATLAS-2905: Generate lineage information for process entities
+ATLAS-2907: UI - show lineage information for process entities
+ATLAS-2917: Filter added for Lineage to hide Process entity.
+ATLAS-2918: Update JanusGraph version to 0.3.1
+ATLAS-2920: Update JanusGraph Solr clients to use all zookeeper entries
+Revert "ATLAS-2841: Regression, Tag Propagation : When a table is moved from database1 to database2 , tag propagated from db1 still propagated to table."
+
+-------------------
+Atlantic-M05 Changes
+--------------------
+
+HDP-CHANGES for Atlantic M05
 ATLAS-2817: Update Janusgraph artifact id
-ATLAS-2819: UI: Re-evaluate classification propagation during entity delete
-ATLAS-2821: Update old atlas-simple-authz-policy.json file with relationship permission attributes
-ATLAS-2822: Provide option whether to delete propagated classification on entity delete during add classification
-ATLAS-2823: updated hooks to support asynchronous notifications
-ATLAS-2825: UI: Provide option whether to delete propagated classification on entity delete during add classification
-ATLAS-2826: fix for failure in authorizing save-search operation.
-ATLAS-2827: Indexed string compaction when length exceeds  33482223
-ATLAS-2830: Tag Propagation, Entity Delete : Classification update notification not sent to entities down the lineage present after the deleted entity
-ATLAS-2834: Init authorizer when Atlas is in HA mode
-ATLAS-2835: Regression: Classifications propagated from term is not removed during term-entity disassociation
-ATLAS-2836: Remove redundant encoding of vertex property keys ATLAS-2838: Replace GraphHelper.encodeProperty() with AtlasGraphUtilsV2.encodeProperty()
-ATLAS-2840: Regression - Tag Propagation, Deleted Entity : When an entity is deleted, tags propagated to it are removed
-
-
-BUG-107810: Add AWS library to atlas packaging in webapp module
-BUG-107991: Dependency upgrade
+HDP-CHANGES for M05
 BUG-109622: Upgrade libpam4j to 1.10
+ATLAS-2817: Handle auto upgrade from janus 0.2.0 to janus  0.3.0
+ATLAS-2827: Indexed string compaction when length exceeds  33482223
+ATLAS-2801: Create a separate tar file for atlas-server.
+ATLAS-2816: Allow ignoring relationship in EntityGraphRetriever for FullTextMapperV2
+ATLAS-2825: UI: Provide option whether to delete propagated classification on entity delete during add classification
+ATLAS-2817: JanusGraph 0.3.0
+ATLAS-2815: API, UI updates for faster rendering of entity details
+ATLAS-2815: API, UI updates for faster rendering of entity details
+ATLAS-2801: Fix for tools directory absent in generated tar.
+BUG-107810: Add AWS library to atlas packaging in webapp module
+ATLAS-2781: Hard Delete : Deleting an entity which is associated to an term associated to a tag fails
+ATLAS-2772: upgrade guava version to 25.1
+Remove JanusGraph Cassandra support
+BUG-105704: fix to address migration failure from HDP-2.6.1
+ATLAS-2740: updated import-hbase.sh script to populate values for missed HBase column-family attributes
+ATLAS-2751: Atlas is not consuming messages from ATLAS_HOOK topic after recovering from zookeeper connection timeout.
+BUG-101620: import-hbase.sh script ignores table's NORMALIZATION_ENABLED attribute
+BUG-103851: migration utility to export Apache Atlas data from HDP-2.6.x (#2)
+BUG-103851: migration utility to export Apache Atlas data from HDP-2.6.x
+BUG-101430: Update Notification version to V2
+BUG-98529:HBase Atlas Hook : No relationship definition created between HBase namespace and HBase table
+BUG-98783: Running import hbase script fails with Null Pointer Exception
+BUG-97738:HBase Atlas import utility : importing using -t default:table fails when namespace is default
+set snapshot versions - jenkins
+BUG-98095: fix for build failure in Atlantic (caused by recent change in Kafka version)
+set snapshot versions - jenkins
+BUG-97720 set snapshot versions
+ATLAS-2397: Fixed disabled test.
+BUG-90777: Update hbase-bridge to support HBase 2.0
+BUG-93763: Basic search with only typename doesn't fetch results
+BUG-93246: Relationship GET api fails
+BUG-93432: fix to address JanusGraph index query failure on kerberized Solr
+BUG-93434: fix to handled missing 'where' in DSL REST API
+BUG-93106: JanusGraph/HBase2: Regression: Unable to disassociate tag from entity
+BUG-92929: Make JanusGraph as the default graph-provider
+BUG-92921: Update atlas_config.py to handle both 'hbase' and 'hbase2' values for atlas.graph.storage.backend
+BUG-92872: build fix - added hadoop-common dependency in janus-hbase2
+BUG-92725: Add HBase 2.0 support to JanusGraph
+ATLAS-2256: Change default graph provider to Titan - remove jackson libraries in titan shaded jar
+ATLAS-2256: Change default graph provider to Titan until JanusGraph 0.2.0 with HBase 2.0 support is added
+Merge remote-tracking branch 'apache/master' into atlantic
+BUG-91628: update Atlas to use 2.6-maint version of Kafka (0.10.1.0)
+Merge remote-tracking branch 'apache/master' into atlantic
+BUG-90777: Disable Atlas HBase hook
+BUG-90777: Update hbase-bridge-shim classes to support HBase 2.0 and update hive and calcite version
+BUG-90777: Update hbase-bridge-shim classes to support HBase 2.0 and update hive and calcite version
+Merge remote-tracking branch 'apache/master' into atlantic
+Fix Atlas build-tools dependency
+BUG-90089: Remove falcon hook from atlas
+BUG-89993: Remove shading of hbase-server and hbase-client libraries
+BUG-89991: Update atlas to use the latest component release versions
