@@ -91,6 +91,7 @@ import static org.apache.atlas.repository.Constants.HOME_ID_KEY;
 import static org.apache.atlas.repository.Constants.IS_PROXY_KEY;
 import static org.apache.atlas.repository.Constants.MODIFICATION_TIMESTAMP_PROPERTY_KEY;
 import static org.apache.atlas.repository.Constants.MODIFIED_BY_KEY;
+import static org.apache.atlas.repository.Constants.PROVENANCE_TYPE_KEY;
 import static org.apache.atlas.repository.Constants.RELATIONSHIP_GUID_PROPERTY_KEY;
 import static org.apache.atlas.repository.Constants.STATE_PROPERTY_KEY;
 import static org.apache.atlas.repository.Constants.SUPER_TYPES_PROPERTY_KEY;
@@ -198,6 +199,10 @@ public class EntityGraphMapper {
 
         if (entity.isProxy() != null) {
             AtlasGraphUtilsV2.setEncodedProperty(vertex, IS_PROXY_KEY, entity.isProxy());
+        }
+
+        if (entity.getProvenanceType() != null) {
+            AtlasGraphUtilsV2.setEncodedProperty(vertex, PROVENANCE_TYPE_KEY, entity.getProvenanceType());
         }
     }
 
