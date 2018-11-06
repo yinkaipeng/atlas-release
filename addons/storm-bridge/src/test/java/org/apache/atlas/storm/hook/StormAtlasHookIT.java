@@ -70,6 +70,7 @@ public class StormAtlasHookIT {
         atlasClient = null;
     }
 
+    @Test
     public void testAddEntities() throws Exception {
         StormTopology stormTopology = StormTestUtil.createTestTopology();
         StormTestUtil.submitTopology(stormCluster, TOPOLOGY_NAME, stormTopology);
