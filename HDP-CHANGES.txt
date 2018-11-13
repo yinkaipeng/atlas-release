@@ -2,10 +2,50 @@
 Atlantic-M10 Changes
 --------------------
 
+ATLAS-2961: updated Hive hook to recognize configuration 'hdfs_path.convert_to_lowercase'
+ATLAS-2950: UI - In newer versions of chrome i.e 70 onwards, if a new column is added the instead of right most it appears at the left most
+ATLAS-2943: Export options null check added.
+ATLAS-2900: Export connected addressed case where imported file is not usable.
+BUG-113089: fix build issue for npm mime-db compatible version issue
+ATLAS-2927: Update lineage query for Process entities
+ATLAS-2926: ZipSink OOM
+ATLAS-2921: Update import scripts exit status in case of java error
+ATLAS-2924: Use encoded property name in getEncodedProperty() and setEncodedProperty() methods
+ATLAS-1950: Import API: Improvement: Specify Supertypes in Import Transforms
+ATLAS-2797: Atlas Cluster.
+ATLAS-2798: Export & Import Audits.
+ATLAS-2802: Atlas Client Update for Export and Import.
+ATLAS-2804: Export & Import Detailed Audits.
+ATLAS-2805: Applying classification updates modificationTimestamp
+ATLAS-2806: Using replication attributes during export and import process.
+ATLAS-2811: Skip Lineage Export option.
+ATLAS-2738: Export Process: Support for incremental export.
+ATLAS-2820: UI : Add replication audits tab for AtlasCluster entity to show Export & Import audit
+ATLAS-2814: Cluster stores replication details.
+ATLAS-2818: Entity tagging after import.
+ATLAS-2843: AtlasClient updates for exportData and importData.
+ATLAS-2845: Rename AtlasCluster to AtlasServer.
+ATLAS-2856: added utility methods to RequestContext, to find number of active requests and earliest active request-time
+ATLAS-2862: Incremental Export now uses request context to determine change marker.
+ATLAS-2870: Improvement to AddClassification transform to use filters.
+ATLAS-2869: Hdfs_path if requested are created and then proceeds with export.
+ATLAS-2864: Improved incremental export queries.
+ATLAS-2873: Atlas Import Transform Handler Implementation
+ATLAS-2874: Include handling of Atlas Entity Transformers in current Import logic
+ATLAS-2875: Implement clear attribute value transformer for Atlas Entity Transformer
+ATLAS-2882: AddClassification transform for new transforms
+ATLAS-2886: Support for fully qualified server name
+ATLAS-2892: Delete by name REST endpoint.
+ATLAS-2895: Server full name processing
+ATLAS-2888: Change marker fix for server name. Unit test fix.
+ATLAS-2906: Allow transforms to be applied when entity-level transforms are present.
+ATLAS-2897: Better handling of empty zip files. Unit test fix.
+ATLAS-2909: ChangeMarker updated during initialization.
+ATLAS-2923: Options copied to AttributeDefinition
+ATLAS-2922: Multiplicity computation updated for SET/optional
 ATLAS-2724: UI enhancement for Avro schemas and other JSON-valued attributes
 ATLAS-2786: updated HBase client to use all zookeeper entries
 ATLAS-2827: Fix to handle failure in saving indexable string property of large size
-ATLAS-2841: Regression, Tag Propagation : When a table is moved from database1 to database2 , tag propagated from db1 still propagated to table.
 ATLAS-2844: added eventTime field in EntityNotificationV2
 ATLAS-2847: UI - Add grunt scripts in package.json
 ATLAS-2848: Fix property name in ApplicationProperties
@@ -23,7 +63,6 @@ ATLAS-2907: UI - show lineage information for process entities
 ATLAS-2917: Filter added for Lineage to hide Process entity.
 ATLAS-2918: Update JanusGraph version to 0.3.1
 ATLAS-2920: Update JanusGraph Solr clients to use all zookeeper entries
-Revert "ATLAS-2841: Regression, Tag Propagation : When a table is moved from database1 to database2 , tag propagated from db1 still propagated to table."
 
 -------------------
 Atlantic-M05 Changes
