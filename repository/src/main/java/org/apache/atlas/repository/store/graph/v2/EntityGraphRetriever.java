@@ -1232,6 +1232,7 @@ public final class EntityGraphRetriever {
             provenanceType = Integer.valueOf(0);
         }
         relationship.setProvenanceType(provenanceType);
+        relationship.setHomeId(GraphHelper.getHomeId(edge));
 
         relationship.setStatus(GraphHelper.getEdgeStatus(edge));
 
