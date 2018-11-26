@@ -194,7 +194,7 @@ public class HBaseBasedAuditRepository implements Service, EntityAuditRepository
                 addColumn(put, COLUMN_DETAIL, event.getDetails());
 
                 if (persistEntityDefinition) {
-                    addColumn(put, COLUMN_DEFINITION, event.getEntity());
+                    addColumn(put, COLUMN_DEFINITION, event.getEntityDefinitionString());
                 }
 
                 puts.add(put);
