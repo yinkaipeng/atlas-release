@@ -45,9 +45,10 @@ public class RequestContext {
 
     private String      user;
     private Set<String> userGroups;
-    private String clientIPAddress;
-    private int    maxAttempts  = 1;
-    private int    attemptCount = 1;
+    private String      clientIPAddress;
+    private int         maxAttempts  = 1;
+    private int         attemptCount = 1;
+    private boolean     isImportInProgress = false;
 
 
     private RequestContext() {
@@ -74,16 +75,7 @@ public class RequestContext {
         RequestContext instance = CURRENT_CONTEXT.get();
 
         if (instance != null) {
-            instance.updatedEntities.clear();
-            instance.deletedEntities.clear();
-            instance.entityCache.clear();
-            instance.entityExtInfoCache.clear();
-            instance.addedPropagations.clear();
-            instance.removedPropagations.clear();
-
-            if (instance.entityGuidInRequest != null) {
-                instance.entityGuidInRequest.clear();
-            }
+            instance.clearCache();
 
             synchronized (ACTIVE_REQUESTS) {
                 ACTIVE_REQUESTS.remove(instance);
@@ -91,6 +83,19 @@ public class RequestContext {
         }
 
         CURRENT_CONTEXT.remove();
+    }
+
+    public void clearCache() {
+        this.updatedEntities.clear();
+        this.deletedEntities.clear();
+        this.entityCache.clear();
+        this.entityExtInfoCache.clear();
+        this.addedPropagations.clear();
+        this.removedPropagations.clear();
+
+        if (this.entityGuidInRequest != null) {
+            this.entityGuidInRequest.clear();
+        }
     }
 
     public static String getCurrentUser() {
@@ -135,6 +140,13 @@ public class RequestContext {
         this.attemptCount = attemptCount;
     }
 
+    public boolean isImportInProgress() {
+        return isImportInProgress;
+    }
+
+    public void setImportInProgress(boolean importInProgress) {
+        isImportInProgress = importInProgress;
+    }
 
     public void recordEntityUpdate(AtlasObjectId entity) {
         if (entity != null && entity.getGuid() != null) {
