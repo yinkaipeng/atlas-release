@@ -1,7 +1,18 @@
 --------------------
-Atlantic-M10 Changes
+Celtic-GA Changes
 --------------------
 
+ATLAS-2976: UI - Show entity specific icon for the lineage node (folder changes)
+ATLAS-2951: UI : Show entity specific icon for the lineage node
+ATLAS-2937: UI: Lineage filter- support added for depth filter
+ATLAS-2986: updated AtlasClient to skip doAs query parameter when username is same as the logged in user
+ATLAS-2984: export should include type defintions of relationships referenced by entities
+ATLAS-2982: import fails to create classification-def
+ATLAS-2981: Skip trusted proxy authentication if doAsUser is same as remote user.
+ATLAS-2965: Duplicate entities are created when when same qualifiedName is given but different guids
+ATLAS-2930: UI changes to handle error message based on softReference attribute (BUG-113253)
+ATLAS-2824: updated authentication to support trusted proxy; updated the default behavior to disable trusted-proxy support
+ATLAS-2975: updated Hive hook to avoid duplicate column-lineage entities; also updated Atlas server to skip duplicate column-lineage entities
 ATLAS-2961: updated Hive hook to recognize configuration 'hdfs_path.convert_to_lowercase'
 ATLAS-2950: UI - In newer versions of chrome i.e 70 onwards, if a new column is added the instead of right most it appears at the left most
 ATLAS-2943: Export options null check added.
