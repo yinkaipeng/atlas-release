@@ -22,6 +22,7 @@ import org.apache.atlas.model.instance.AtlasClassification;
 import org.apache.atlas.model.instance.AtlasEntity.AtlasEntitiesWithExtInfo;
 import org.apache.atlas.model.instance.AtlasEntity.AtlasEntityWithExtInfo;
 import org.apache.atlas.model.instance.AtlasEntityHeader;
+import org.apache.atlas.model.instance.AtlasEntityHeaders;
 import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.atlas.model.instance.EntityMutationResponse;
 import org.apache.atlas.repository.store.graph.v2.EntityStream;
@@ -206,4 +207,6 @@ public interface AtlasEntityStore {
     List<AtlasClassification> getClassifications(String guid) throws AtlasBaseException;
 
     AtlasClassification getClassification(String guid, String classificationName) throws AtlasBaseException;
+
+    String setClassifications(AtlasEntityHeaders entityHeaders);
 }
