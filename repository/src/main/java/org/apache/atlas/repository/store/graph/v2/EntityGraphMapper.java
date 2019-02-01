@@ -174,10 +174,6 @@ public class EntityGraphMapper {
     }
 
     public void updateSystemAttributes(AtlasVertex vertex, AtlasEntity entity) {
-        if (entity.getStatus() != null) {
-            AtlasGraphUtilsV2.setEncodedProperty(vertex, STATE_PROPERTY_KEY, entity.getStatus().name());
-        }
-
         if (entity.getVersion() != null) {
             AtlasGraphUtilsV2.setEncodedProperty(vertex, VERSION_PROPERTY_KEY, entity.getVersion());
         }
@@ -261,13 +257,17 @@ public class EntityGraphMapper {
             }
         }
 
+        if (CollectionUtils.isNotEmpty(context.getEntitiesToDelete())) {
+            deleteDelegate.getHandler().deleteEntities(context.getEntitiesToDelete());
+        }
+
         RequestContext req = RequestContext.get();
 
-        for (AtlasObjectId entity : req.getDeletedEntities()) {
+        for (AtlasEntityHeader entity : req.getDeletedEntities()) {
             resp.addEntity(DELETE, entity);
         }
 
-        for (AtlasObjectId entity : req.getUpdatedEntities()) {
+        for (AtlasEntityHeader entity : req.getUpdatedEntities()) {
             if (isPartialUpdate) {
                 resp.addEntity(PARTIAL_UPDATE, entity);
             }
@@ -430,7 +430,7 @@ public class EntityGraphMapper {
         switch (ctx.getAttrType().getTypeCategory()) {
             case PRIMITIVE:
             case ENUM:
-                return mapPrimitiveValue(ctx);
+                return mapPrimitiveValue(ctx, context);
 
             case STRUCT: {
                 String    edgeLabel   = AtlasGraphUtilsV2.getEdgeLabel(ctx.getVertexProperty());
@@ -612,7 +612,7 @@ public class EntityGraphMapper {
             if (!requestContext.isDeletedEntity(GraphHelper.getGuid(inverseVertex))) {
                 updateModificationMetadata(inverseVertex);
 
-                requestContext.recordEntityUpdate(entityRetriever.toAtlasObjectId(inverseVertex));
+                requestContext.recordEntityUpdate(entityRetriever.toAtlasEntityHeader(inverseVertex));
             }
         }
     }
@@ -699,7 +699,7 @@ public class EntityGraphMapper {
         return ret;
     }
 
-    private Object mapPrimitiveValue(AttributeMutationContext ctx) {
+    private Object mapPrimitiveValue(AttributeMutationContext ctx, EntityMutationContext context) {
         boolean isIndexableStrAttr = ctx.getAttributeDef().getIsIndexable() && ctx.getAttrType() instanceof AtlasBuiltInTypes.AtlasStringType;
 
         Object ret = ctx.getValue();
@@ -743,7 +743,7 @@ public class EntityGraphMapper {
         String uniqPropName = ctx.getAttribute() != null ? ctx.getAttribute().getVertexUniquePropertyName() : null;
 
         if (uniqPropName != null) {
-            if (AtlasGraphUtilsV2.getState(ctx.getReferringVertex()) == DELETED) {
+            if (context.isDeletedEntity(ctx.getReferringVertex()) || AtlasGraphUtilsV2.getState(ctx.getReferringVertex()) == DELETED) {
                 ctx.getReferringVertex().removeProperty(uniqPropName);
             } else {
                 AtlasGraphUtilsV2.setEncodedProperty(ctx.getReferringVertex(), uniqPropName, ret);
@@ -1390,16 +1390,13 @@ public class EntityGraphMapper {
         AtlasEntityHeader header = new AtlasEntityHeader(entity.getTypeName());
 
         header.setGuid(getIdFromVertex(vertex));
+        header.setStatus(entity.getStatus());
 
         for (AtlasAttribute attribute : type.getUniqAttributes().values()) {
             header.setAttribute(attribute.getName(), entity.getAttribute(attribute.getName()));
         }
 
         return header;
-    }
-
-    public static AtlasEntityHeader constructHeader(AtlasObjectId id) {
-        return new AtlasEntityHeader(id.getTypeName(), id.getGuid(), id.getUniqueAttributes());
     }
 
     private void updateInConsistentOwnedMapVertices(AttributeMutationContext ctx, AtlasMapType mapType, Object val) {
@@ -1417,14 +1414,8 @@ public class EntityGraphMapper {
 
     public void addClassifications(final EntityMutationContext context, String guid, List<AtlasClassification> classifications) throws AtlasBaseException {
         if (CollectionUtils.isNotEmpty(classifications)) {
-            AtlasVertex entityVertex = AtlasGraphUtilsV2.findByGuid(guid);
-
-            if (entityVertex == null) {
-                throw new AtlasBaseException(AtlasErrorCode.INSTANCE_GUID_NOT_FOUND, guid);
-            }
-
-            final String                                entityTypeName        = AtlasGraphUtilsV2.getTypeName(entityVertex);
-            final AtlasEntityType                       entityType            = typeRegistry.getEntityTypeByName(entityTypeName);
+            final AtlasVertex                           entityVertex          = context.getVertex(guid);
+            final AtlasEntityType                       entityType            = context.getType(guid);
             List<AtlasVertex>                           entitiesToPropagateTo = null;
             Map<AtlasVertex, List<AtlasClassification>> propagations          = null;
             List<AtlasClassification>                   addClassifications    = new ArrayList<>(classifications.size());
@@ -1469,7 +1460,7 @@ public class EntityGraphMapper {
                 // ignore propagated classifications
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Adding classification [{}] to [{}] using edge label: [{}]", classificationName, entityTypeName, getTraitLabel(classificationName));
+                    LOG.debug("Adding classification [{}] to [{}] using edge label: [{}]", classificationName, entityType.getTypeName(), getTraitLabel(classificationName));
                 }
 
                 AtlasGraphUtilsV2.addEncodedProperty(entityVertex, TRAIT_NAMES_PROPERTY_KEY, classificationName);
@@ -1501,7 +1492,7 @@ public class EntityGraphMapper {
                         }
 
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Propagating tag: [{}][{}] to {}", classificationName, entityTypeName, getTypeNames(entitiesToPropagateTo));
+                            LOG.debug("Propagating tag: [{}][{}] to {}", classificationName, entityType.getTypeName(), getTypeNames(entitiesToPropagateTo));
                         }
 
                         List<AtlasVertex> entitiesPropagatedTo = deleteDelegate.getHandler().addTagPropagation(classificationVertex, entitiesToPropagateTo);
@@ -1513,12 +1504,12 @@ public class EntityGraphMapper {
                         }
                     } else {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug(" --> Not propagating classification: [{}][{}] - no entities found to propagate to.", getTypeName(classificationVertex), entityTypeName);
+                            LOG.debug(" --> Not propagating classification: [{}][{}] - no entities found to propagate to.", getTypeName(classificationVertex), entityType.getTypeName());
                         }
                     }
                 } else {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug(" --> Not propagating classification: [{}][{}] - propagation is disabled.", getTypeName(classificationVertex), entityTypeName);
+                        LOG.debug(" --> Not propagating classification: [{}][{}] - propagation is disabled.", getTypeName(classificationVertex), entityType.getTypeName());
                     }
                 }
 
@@ -1902,7 +1893,7 @@ public class EntityGraphMapper {
         if (!req.isUpdatedEntity(GraphHelper.getGuid(vertex))) {
             updateModificationMetadata(vertex);
 
-            req.recordEntityUpdate(entityRetriever.toAtlasObjectId(vertex));
+            req.recordEntityUpdate(entityRetriever.toAtlasEntityHeader(vertex));
         }
     }
 
