@@ -56,6 +56,8 @@ public interface IDataType<T> {
 
     String getDescription();
 
+    void setTypeSystem(TypeSystem typeSystem);
+
     String getVersion();
 }
 

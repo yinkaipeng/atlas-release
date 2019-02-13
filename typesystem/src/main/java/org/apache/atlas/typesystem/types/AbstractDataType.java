@@ -49,6 +49,10 @@ abstract class AbstractDataType<T> implements IDataType<T> {
         this.version = version;
     }
 
+    public void setTypeSystem(TypeSystem typeSystem) {
+        // do nothing
+    }
+
     protected T convertNull(Multiplicity m) throws AtlasException {
         if (!m.nullAllowed()) {
             throw new ValueConversionException.NullConversionException(m);
