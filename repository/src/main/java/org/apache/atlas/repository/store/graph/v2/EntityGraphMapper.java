@@ -1414,6 +1414,8 @@ public class EntityGraphMapper {
 
     public void addClassifications(final EntityMutationContext context, String guid, List<AtlasClassification> classifications) throws AtlasBaseException {
         if (CollectionUtils.isNotEmpty(classifications)) {
+            MetricRecorder metric = RequestContext.get().startMetricRecord("addClassifications");
+
             final AtlasVertex                           entityVertex          = context.getVertex(guid);
             final AtlasEntityType                       entityType            = context.getType(guid);
             List<AtlasVertex>                           entitiesToPropagateTo = null;
@@ -1433,7 +1435,9 @@ public class EntityGraphMapper {
                 }
 
                 if (propagateTags == null) {
-                    if(RequestContext.get().isImportInProgress()) {
+                    RequestContext reqContext = RequestContext.get();
+
+                    if(reqContext.isImportInProgress() || reqContext.isInNotificationProcessing()) {
                         propagateTags = false;
                         classification.setPropagate(propagateTags);
                     } else {
@@ -1532,6 +1536,8 @@ public class EntityGraphMapper {
                     entityChangeNotifier.onClassificationAddedToEntity(entity, addedClassifications);
                 }
             }
+
+            RequestContext.get().endMetricRecord(metric);
         }
     }
 
