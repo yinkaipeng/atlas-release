@@ -374,17 +374,21 @@ public class EntityGraphMapper {
             MetricRecorder metric = RequestContext.get().startMetricRecord("mapRelationshipAttributes");
 
             if (op.equals(CREATE)) {
-                for (AtlasAttribute attribute : entityType.getRelationshipAttributes().values()) {
-                    Object attrValue = entity.getRelationshipAttribute(attribute.getName());
+                for (String attrName : entityType.getRelationshipAttributes().keySet()) {
+                    Object         attrValue    = entity.getRelationshipAttribute(attrName);
+                    String         relationType = AtlasEntityUtil.getRelationshipType(attrValue);
+                    AtlasAttribute attribute    = entityType.getRelationshipAttribute(attrName, relationType);
 
                     mapAttribute(attribute, attrValue, vertex, op, context);
                 }
 
             } else if (op.equals(UPDATE)) {
                 // relationship attributes mapping
-                for (AtlasAttribute attribute : entityType.getRelationshipAttributes().values()) {
-                    if (attribute != null && entity.hasRelationshipAttribute(attribute.getName())) {
-                        Object attrValue = entity.getRelationshipAttribute(attribute.getName());
+                for (String attrName : entityType.getRelationshipAttributes().keySet()) {
+                    if (entity.hasRelationshipAttribute(attrName)) {
+                        Object         attrValue    = entity.getRelationshipAttribute(attrName);
+                        String         relationType = AtlasEntityUtil.getRelationshipType(attrValue);
+                        AtlasAttribute attribute    = entityType.getRelationshipAttribute(attrName, relationType);
 
                         mapAttribute(attribute, attrValue, vertex, op, context);
                     }
@@ -634,7 +638,7 @@ public class EntityGraphMapper {
             AtlasEntityType entityType = (AtlasEntityType) inverseAttributeType;
 
             if (entityType.hasRelationshipAttribute(inverseAttributeName)) {
-                String relationshipName = graphHelper.getRelationshipDefName(inverseVertex, entityType, inverseAttributeName);
+                String relationshipName = graphHelper.getRelationshipTypeName(inverseVertex, entityType, inverseAttributeName);
 
                 ret = getOrCreateRelationship(inverseVertex, vertex, relationshipName, relationshipAttributes);
 
@@ -878,7 +882,7 @@ public class EntityGraphMapper {
                     ret = updateRelationship(ctx.getCurrentEdge(), entityVertex, attributeVertex, edgeDirection, relationshipAttributes);
 
                 } else {
-                    String      relationshipName = graphHelper.getRelationshipDefName(entityVertex, entityType, attributeName);
+                    String      relationshipName = graphHelper.getRelationshipTypeName(entityVertex, entityType, attributeName);
                     AtlasVertex fromVertex;
                     AtlasVertex toVertex;
 
@@ -1935,8 +1939,7 @@ public class EntityGraphMapper {
     // move/remove relationship-attributes present in 'attributes'
     private static void compactAttributes(AtlasEntity entity, AtlasEntityType entityType) {
         if (entity != null) {
-            for (AtlasAttribute attribute : entityType.getRelationshipAttributes().values()) {
-                String attrName = attribute.getName();
+            for (String attrName : entityType.getRelationshipAttributes().keySet()) {
 
                 if (entity.hasAttribute(attrName)) {
                     Object attrValue = entity.getAttribute(attrName);
