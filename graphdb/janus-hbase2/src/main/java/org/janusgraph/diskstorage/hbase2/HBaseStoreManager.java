@@ -93,8 +93,11 @@ import static org.janusgraph.graphdb.configuration.GraphDatabaseConfiguration.SY
 
 /**
  * Storage Manager for HBase
+<<<<<<< HEAD
  *
  * @author Dan LaRocque <dalaro@hopcount.org>
+=======
+>>>>>>> 2e1c56341... ATLAS-2987: Update component versions of Atlas to use Hadoop3, HBase2 and Solr7
  */
 @PreInitializeConfigOptions
 public class HBaseStoreManager extends DistributedStoreManager implements KeyColumnValueStoreManager {

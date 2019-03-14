@@ -32,7 +32,7 @@ LIB = "lib"
 CONF = "conf"
 LOG = "logs"
 WEBAPP = "server" + os.sep + "webapp"
-CONFIG_SETS_CONF = "server" + os.sep + "solr" + os.sep + "configsets" + os.sep + "basic_configs" + os.sep + "conf"
+CONFIG_SETS_CONF = "server" + os.sep + "solr" + os.sep + "configsets" + os.sep + "_default" + os.sep + "conf"
 DATA = "data"
 ATLAS_CONF = "ATLAS_CONF"
 ATLAS_LOG = "ATLAS_LOG_DIR"
@@ -415,8 +415,8 @@ def is_hbase_local(confdir):
     if os.environ.get(MANAGE_LOCAL_HBASE, "False").lower() == 'false':
         return False
 
-    confdir = os.path.join(confdir, CONF_FILE)
-    return is_hbase(confdir) and grep(confdir, HBASE_STORAGE_LOCAL_CONF_ENTRY) is not None
+    confFile = os.path.join(confdir, CONF_FILE)
+    return is_hbase(confdir) and grep(confFile, HBASE_STORAGE_LOCAL_CONF_ENTRY) is not None
 
 def run_hbase_action(dir, action, hbase_conf_dir = None, logdir = None, wait=True):
     if IS_WINDOWS:
@@ -653,14 +653,14 @@ def configure_cassandra(dir):
 
 def server_already_running(pid):
     print "Atlas server is already running under process %s" % pid
-    sys.exit()  
-    
+    sys.exit()
+
 def server_pid_not_running(pid):
     print "The Server is no longer running with pid %s" %pid
 
 def grep(file, value):
     for line in open(file).readlines():
-        if re.match(value, line):	
+        if re.match(value, line):
            return line
     return None
 

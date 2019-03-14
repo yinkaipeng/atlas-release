@@ -31,7 +31,6 @@
     <packaging>jar</packaging>
     
     <dependencies>
-
         <dependency>
             <groupId>org.apache.atlas</groupId>
             <artifactId>atlas-client-v2</artifactId>
@@ -55,7 +54,5 @@
             <artifactId>janusgraph-core</artifactId>
             <version>${janus.version}</version>
         </dependency>
-
     </dependencies>
-
 </project>

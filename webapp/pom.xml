@@ -469,7 +469,7 @@
                         </manifest>
                     </archive>
                     <packagingExcludes>
-                        WEB-INF/lib/titan*.jar,WEB-INF/lib/junit*.jar,${packages.to.exclude}
+                        WEB-INF/lib/junit*.jar,${packages.to.exclude}
                     </packagingExcludes>
                 </configuration>
             </plugin>
@@ -606,10 +606,10 @@
                     </httpConnector>
                     <war>${project.build.directory}/atlas-webapp-${project.version}.war</war>
                     <daemon>true</daemon>
-                    <webAppSourceDirectory>webapp/src/test/webapp</webAppSourceDirectory>
+                    <webAppSourceDirectory>${project.basedir}/src/main/webapp</webAppSourceDirectory>
                     <webApp>
                         <contextPath>/</contextPath>
-                        <descriptor>${project.basedir}/src/test/webapp/WEB-INF/web.xml</descriptor>
+                        <descriptor>${project.basedir}/src/main/webapp/WEB-INF/web.xml</descriptor>
                         <extraClasspath>${project.build.testOutputDirectory}</extraClasspath>
                     </webApp>
                     <useTestScope>true</useTestScope>

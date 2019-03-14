@@ -22,8 +22,11 @@ import org.janusgraph.diskstorage.common.AbstractStoreTransaction;
  * {@link org.janusgraph.diskstorage.locking.consistentkey.ExpectedValueCheckingTransaction}; however, it creates a transaction type specific
  * to HBase, which lets us check for user errors like passing a Cassandra
  * transaction into a HBase method.
+<<<<<<< HEAD
  *
  * @author Dan LaRocque <dalaro@hopcount.org>
+=======
+>>>>>>> 2e1c56341... ATLAS-2987: Update component versions of Atlas to use Hadoop3, HBase2 and Solr7
  */
 public class HBaseTransaction extends AbstractStoreTransaction {
 

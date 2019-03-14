@@ -57,6 +57,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.util.*;
 
@@ -215,9 +216,9 @@ public class HiveHookIT extends HiveITBase {
         final WriteEntity entity;
 
         if (Entity.Type.DFS_DIR.equals(entityType) || Entity.Type.LOCAL_DIR.equals(entityType)) {
-            entity = new WriteEntity(lower(new Path(inputName).toString()), entityType);
+            entity = new TestWriteEntity(lower(new Path(inputName).toString()), entityType);
         } else {
-            entity = new WriteEntity(getQualifiedTblName(inputName), entityType);
+            entity = new TestWriteEntity(getQualifiedTblName(inputName), entityType);
         }
 
         if (entityType == Entity.Type.TABLE) {
@@ -587,8 +588,8 @@ public class HiveHookIT extends HiveITBase {
     @Test
     public void testInsertIntoLocalDir() throws Exception {
         String tableName       = createTable();
-        File   randomLocalPath = File.createTempFile("hiverandom", ".tmp");
-        String query           = "insert overwrite LOCAL DIRECTORY '" + randomLocalPath.getAbsolutePath() + "' select id, name from " + tableName;
+        String randomLocalPath = mkdir("hiverandom.tmp");
+        String query           = "insert overwrite LOCAL DIRECTORY '" + randomLocalPath + "' select id, name from " + tableName;
 
         runCommand(query);
 
@@ -1531,7 +1532,7 @@ public class HiveHookIT extends HiveITBase {
     }
 
     private WriteEntity getPartitionOutput() {
-        WriteEntity partEntity = new WriteEntity(PART_FILE, Entity.Type.PARTITION);
+        TestWriteEntity partEntity = new TestWriteEntity(PART_FILE, Entity.Type.PARTITION);
 
         return partEntity;
     }
@@ -2040,6 +2041,23 @@ public class HiveHookIT extends HiveITBase {
         private final Entity.Type type;
 
         public TestReadEntity(String name, Entity.Type type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() { return name; }
+
+        @Override
+        public Entity.Type getType() { return type; }
+    }
+
+    // WriteEntity class doesn't offer a constructor that takes (name, type). A hack to get the tests going!
+    private static class TestWriteEntity extends WriteEntity {
+        private final String      name;
+        private final Entity.Type type;
+
+        public TestWriteEntity(String name, Entity.Type type) {
             this.name = name;
             this.type = type;
         }

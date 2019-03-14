@@ -162,7 +162,7 @@ public class HBaseAtlasHook extends AtlasHook {
 
 
     public void createAtlasInstances(HBaseOperationContext hbaseOperationContext) {
-        HBaseAtlasHook.OPERATION operation = hbaseOperationContext.getOperation();
+        OPERATION operation = hbaseOperationContext.getOperation();
 
         LOG.info("HBaseAtlasHook(operation={})", operation);
 

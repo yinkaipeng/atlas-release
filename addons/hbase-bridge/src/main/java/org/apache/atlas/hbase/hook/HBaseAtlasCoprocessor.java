@@ -51,7 +51,9 @@ public class HBaseAtlasCoprocessor implements MasterCoprocessor, MasterObserver,
         if (LOG.isDebugEnabled()) {
             LOG.debug("==> HBaseAtlasCoprocessor.postCreateTable()");
         }
+
         hbaseAtlasHook.sendHBaseTableOperation(tableDescriptor, null, HBaseAtlasHook.OPERATION.CREATE_TABLE, observerContext);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== HBaseAtlasCoprocessor.postCreateTable()");
         }
@@ -62,7 +64,9 @@ public class HBaseAtlasCoprocessor implements MasterCoprocessor, MasterObserver,
         if (LOG.isDebugEnabled()) {
             LOG.debug("==> HBaseAtlasCoprocessor.postDeleteTable()");
         }
+
         hbaseAtlasHook.sendHBaseTableOperation(null, tableName, HBaseAtlasHook.OPERATION.DELETE_TABLE, observerContext);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== HBaseAtlasCoprocessor.postDeleteTable()");
         }
@@ -73,7 +77,9 @@ public class HBaseAtlasCoprocessor implements MasterCoprocessor, MasterObserver,
         if (LOG.isDebugEnabled()) {
             LOG.debug("==> HBaseAtlasCoprocessor.postModifyTable()");
         }
+
         hbaseAtlasHook.sendHBaseTableOperation(tableDescriptor, tableName, HBaseAtlasHook.OPERATION.ALTER_TABLE, observerContext);
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== HBaseAtlasCoprocessor.postModifyTable()");
         }
@@ -143,7 +149,4 @@ public class HBaseAtlasCoprocessor implements MasterCoprocessor, MasterObserver,
             LOG.debug("<== HBaseAtlasCoprocessor.postRestoreSnapshot()");
         }
     }
-
 }
-
-

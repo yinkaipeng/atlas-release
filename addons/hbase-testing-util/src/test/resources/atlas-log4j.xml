@@ -51,14 +51,6 @@
         </layout>
     </appender>
 
-    <appender name="HBASE" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="${atlas.log.dir}/hbase.log"/>
-        <param name="Append" value="true"/>
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d %x %m%n"/>
-        </layout>
-    </appender>
-
     <appender name="FAILED" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${atlas.log.dir}/failed.log"/>
         <param name="Append" value="true"/>
@@ -87,11 +79,6 @@
     <logger name="org.apache.atlas" additivity="false">
         <level value="info"/>
         <appender-ref ref="FILE"/>
-    </logger>
-
-    <logger name="org.apache.hadoop" additivity="false">
-        <level value="debug"/>
-        <appender-ref ref="HBASE"/>
     </logger>
 
     <logger name="org.janusgraph" additivity="false">

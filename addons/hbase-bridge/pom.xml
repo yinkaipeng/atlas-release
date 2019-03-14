@@ -46,6 +46,10 @@
                     <groupId>org.mortbay.jetty</groupId>
                     <artifactId>servlet-api-2.5</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -77,17 +81,24 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
+            <version>${hadoop.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs-client</artifactId>
+            <version>${hadoop.version}</version>
         </dependency>
 
         <dependency>
@@ -151,6 +162,13 @@
         </dependency>
 
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+            <version>4.12</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
             <version>${hbase.version}</version>
@@ -177,7 +195,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>12.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -216,6 +233,7 @@
             <version>${hbase.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <profiles>
@@ -288,11 +306,6 @@
                                             <groupId>com.sun.jersey.contribs</groupId>
                                             <artifactId>jersey-multipart</artifactId>
                                             <version>${jersey.version}</version>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>org.scala-lang</groupId>
-                                            <artifactId>scala-library</artifactId>
-                                            <version>${scala.version}</version>
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>com.fasterxml.jackson.core</groupId>
@@ -375,7 +388,6 @@
                     <webApp>
                         <contextPath>/</contextPath>
                         <descriptor>${project.basedir}/../../webapp/src/test/webapp/WEB-INF/web.xml</descriptor>
-                        <extraClasspath>${project.basedir}/../../webapp/target/test-classes/</extraClasspath>
                     </webApp>
                     <useTestScope>true</useTestScope>
                     <systemProperties>
@@ -417,6 +429,18 @@
                     <stopPort>31001</stopPort>
                     <stopWait>${jetty-maven-plugin.stopWait}</stopWait>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-core</artifactId>
+                        <version>2.8</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-api</artifactId>
+                        <version>2.8</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>start-jetty</id>
@@ -491,7 +515,10 @@
                             <resources>
                                 <resource>
                                     <directory>${basedir}/../models</directory>
-                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>0000-Area0/**</include>
+                                        <include>1000-Hadoop/**</include>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>

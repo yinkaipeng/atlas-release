@@ -349,9 +349,9 @@ public class HBaseBasedAuditRepository implements Service, EntityAuditRepository
              * small is set to true to optimise RPC calls as the scanner is created per request
              */
             Scan scan = new Scan().setReversed(true).setFilter(new PageFilter(n))
-                                  .setStopRow(Bytes.toBytes(entityId))
-                                  .setCaching(n)
-                                  .setSmall(true);
+                    .setStopRow(Bytes.toBytes(entityId))
+                    .setCaching(n)
+                    .setSmall(true);
             if (StringUtils.isEmpty(startKey)) {
                 //Set start row to entity id + max long value
                 byte[] entityBytes = getKey(entityId, Long.MAX_VALUE, Integer.MAX_VALUE);
@@ -594,7 +594,7 @@ public class HBaseBasedAuditRepository implements Service, EntityAuditRepository
 
     @VisibleForTesting
     void startInternal(Configuration atlasConf,
-                                 org.apache.hadoop.conf.Configuration hbaseConf) throws AtlasException {
+                       org.apache.hadoop.conf.Configuration hbaseConf) throws AtlasException {
 
         String tableNameStr = atlasConf.getString(CONFIG_TABLE_NAME, DEFAULT_TABLE_NAME);
         tableName = TableName.valueOf(tableNameStr);

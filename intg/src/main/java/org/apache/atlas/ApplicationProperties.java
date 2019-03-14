@@ -53,7 +53,6 @@ public final class ApplicationProperties extends PropertiesConfiguration {
     public static final String  STORAGE_BACKEND_HBASE      = "hbase";
     public static final String  STORAGE_BACKEND_HBASE2     = "hbase2";
     public static final String  INDEX_BACKEND_SOLR         = "solr";
-    public static final String  INDEX_BACKEND_SOLR5        = "solr5";
     public static final String  DEFAULT_GRAPHDB_BACKEND    = GRAPHBD_BACKEND_JANUS;
     public static final boolean DEFAULT_SOLR_WAIT_SEARCHER = true;
     public static final boolean DEFAULT_INDEX_MAP_NAME     = false;
