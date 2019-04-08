@@ -75,6 +75,7 @@ import java.util.stream.StreamSupport;
 
 import static org.apache.atlas.repository.Constants.INDEX_SEARCH_VERTEX_PREFIX_DEFAULT;
 import static org.apache.atlas.repository.Constants.INDEX_SEARCH_VERTEX_PREFIX_PROPERTY;
+import static org.apache.atlas.repository.graphdb.janus.AtlasJanusGraphDatabase.getGraphInstance;
 
 /**
  * Janus implementation of AtlasGraph.
@@ -88,11 +89,15 @@ public class AtlasJanusGraph implements AtlasGraph<AtlasJanusVertex, AtlasJanusE
     private final StandardJanusGraph          janusGraph;
 
     public AtlasJanusGraph() {
+        this(getGraphInstance());
+    }
+
+    public AtlasJanusGraph(JanusGraph graphInstance) {
         //determine multi-properties once at startup
         JanusGraphManagement mgmt = null;
 
         try {
-            mgmt = AtlasJanusGraphDatabase.getGraphInstance().openManagement();
+            mgmt = graphInstance.openManagement();
 
             Iterable<PropertyKey> keys = mgmt.getRelationTypes(PropertyKey.class);
 
@@ -259,7 +264,7 @@ public class AtlasJanusGraph implements AtlasGraph<AtlasJanusVertex, AtlasJanusE
     }
 
     private JanusGraph getGraph() {
-        return AtlasJanusGraphDatabase.getGraphInstance();
+        return getGraphInstance();
     }
 
     @Override
