@@ -162,17 +162,10 @@ public class HiveHook extends AtlasHook implements ExecuteWithHookContext {
             LOG.debug("==> HiveHook.run({})", hookContext.getOperationName());
         }
 
-        if (knownObjects != null && knownObjects.isCacheExpired()) {
-            LOG.info("HiveHook.run(): purging cached databaseNames ({}) and tableNames ({})", knownObjects.getCachedDbCount(), knownObjects.getCachedTableCount());
-
-            knownObjects = new HiveHookObjectNamesCache(nameCacheDatabaseMaxCount, nameCacheTableMaxCount, nameCacheRebuildIntervalSeconds);
-        }
-
         try {
             HiveOperation        oper    = OPERATION_MAP.get(hookContext.getOperationName());
-            AtlasHiveHookContext context = new AtlasHiveHookContext(this, oper, hookContext, knownObjects);
-
-            BaseHiveEvent event = null;
+            AtlasHiveHookContext context = new AtlasHiveHookContext(this, oper, hookContext, getKnownObjects());
+            BaseHiveEvent        event   = null;
 
             switch (oper) {
                 case CREATEDATABASE:
@@ -185,6 +178,7 @@ public class HiveHook extends AtlasHook implements ExecuteWithHookContext {
 
                 case ALTERDATABASE:
                 case ALTERDATABASE_OWNER:
+                case ALTERDATABASE_LOCATION:
                     event = new AlterDatabase(context);
                 break;
 
@@ -315,6 +309,15 @@ public class HiveHook extends AtlasHook implements ExecuteWithHookContext {
         return ignoreValuesTmpTableNamePrefix;
     }
 
+    public static HiveHookObjectNamesCache getKnownObjects() {
+        if (knownObjects != null && knownObjects.isCacheExpired()) {
+            LOG.info("HiveHook.run(): purging cached databaseNames ({}) and tableNames ({})", knownObjects.getCachedDbCount(), knownObjects.getCachedTableCount());
+
+            knownObjects = new HiveHook.HiveHookObjectNamesCache(nameCacheDatabaseMaxCount, nameCacheTableMaxCount, nameCacheRebuildIntervalSeconds);
+        }
+
+        return knownObjects;
+    }
 
     public static class HiveHookObjectNamesCache {
         private final int         dbMaxCacheCount;
