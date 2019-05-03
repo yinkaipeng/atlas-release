@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DependencyKey;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -247,7 +246,6 @@ public abstract class BaseHiveEvent {
 
             case TABLE:
             case PARTITION: {
-
                     String  dbName    = entity.getTable().getDbName();
                     String  tableName = entity.getTable().getTableName();
                     boolean skipTable = StringUtils.isNotEmpty(context.getIgnoreValuesTmpTableNamePrefix()) && tableName.toLowerCase().startsWith(context.getIgnoreValuesTmpTableNamePrefix());
@@ -260,6 +258,8 @@ public abstract class BaseHiveEvent {
                         Table table = getHive().getTable(dbName, tableName);
 
                         ret = toTableEntity(table, entityExtInfo);
+                    } else {
+                        context.registerSkippedEntity(entity);
                     }
                 }
                 break;
